@@ -1,0 +1,72 @@
+/*setup();
+
+    
+    clear(GPIO8);
+    set(GPIO8);
+    clear(GPIO8);
+    clear(GPIO2);
+    clear(GPIO3);
+    clear(GPIO4);
+    clear(GPIO5);
+    for (int i=0; i<96; i++){
+        set(GPIO6);
+    }
+    for (int i=0; i<96; i++){
+        set(GPIO6);
+    }
+    set(GPIO2);
+    set(GPIO3);
+    set(GPIO4);
+    set(GPIO5);
+    for (int i=0; i<96; i++){
+        clear(GPIO6);
+    }
+    set(GPIO8);
+    
+
+    while(true){
+        
+        clear(GPIO8);
+        set(GPIO8);
+        clear(GPIO2);
+
+        for (int i=0; i<96; i++){
+            set(GPIO6);
+        }
+        clear(GPIO8);
+        set(GPIO8);
+        set(GPIO2);
+        set(GPIO3);
+        set(GPIO4);
+        set(GPIO5);
+        for (int i=0; i<32; i++){
+            clock();
+        }
+        for (int i=0; i<96; i++){
+            set(GPIO6);
+        }
+
+
+
+
+
+
+        gpio_set(GPIOC, GPIO8);
+        gpio_set(GPIOC, GPIO2);
+        gpio_set(GPIOC, GPIO3);
+        gpio_set(GPIOC, GPIO4);
+        gpio_set(GPIOC, GPIO5);
+        
+        for (int i=0; i<96; i++){
+            clear(GPIO6);
+        }
+        for (int i=0; i<96; i++){
+            set(GPIO6);
+        }
+        gpio_clear(GPIOC, GPIO8);
+        gpio_clear(GPIOC, GPIO2);
+        gpio_clear(GPIOC, GPIO3);
+        gpio_clear(GPIOC, GPIO4);
+        gpio_clear(GPIOC, GPIO5);
+        
+    }*/
