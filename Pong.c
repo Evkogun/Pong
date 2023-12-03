@@ -181,15 +181,25 @@ void ball(int balldirection, int ballpositionx, int ballrow, int bottomScreen[],
     }
 
     if (ballrow == 1 || ballrow == 31){
-        balldirection++;
+        switch(balldirection){
+            case 0: balldirection = 3; break;
+            case 1: balldirection = 2; break;
+            case 2: balldirection = 1; break;
+            case 3: balldirection = 0; break;
+        }
     }
     if (paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow && ballpositionx == 4){
-        balldirection = balldirection + 1;
+        switch(balldirection){
+            case 0: balldirection = 1; break;
+            case 3: balldirection = 2; break;
+        }
     }
     if (paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow && ballpositionx == 536870912){
-        balldirection = balldirection + 1;
+        switch(balldirection){
+            case 1: balldirection = 0; break;
+            case 2: balldirection = 3; break;
+        }
     }
-    balldirection = balldirection % 4;
 
     if (balldirection == 0 || balldirection == 3){
         ballpositionx = ballpositionx / 2;
@@ -219,3 +229,28 @@ void ball(int balldirection, int ballpositionx, int ballrow, int bottomScreen[],
     
     //add rebound mechanic with paddlecentre 1 and 2
 }
+
+// VERY IMPORTANT BALL ALGORITHM HAS BEEN UPDATED ADD IT TO CODE
+
+/*
+    if (ballrow == 1 || ballrow == 31){
+        switch(balldirection){
+            case 0: balldirection = 3; break;
+            case 1: balldirection = 2; break;
+            case 2: balldirection = 1; break;
+            case 3: balldirection = 0; break;
+        }
+    }
+    if (paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow && ballpositionx == 4){
+        switch(balldirection){
+            case 0: balldirection = 1; break;
+            case 3: balldirection = 2; break;
+        }
+    }
+    if (paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow && ballpositionx == 536870912){
+        switch(balldirection){
+            case 1: balldirection = 0; break;
+            case 2: balldirection = 3; break;
+        }
+    }
+*/
