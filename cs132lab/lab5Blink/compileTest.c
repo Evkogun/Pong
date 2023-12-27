@@ -1,11 +1,16 @@
 #include "libopencm3/stm32/rcc.h"   //Needed to enable clocks for particular GPIO ports
 #include "libopencm3/stm32/gpio.h"  //Needed to define things on the GPIO
 #include <stdint.h>
+#include "libopencm3/stm32/adc.h" // analogue inputs
 
 void printScreen(uint32_t bottomScreen[], uint32_t topScreen[]);
 void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside);
 int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int resethasrun);
 void rowSelector(int rowSelector);
+void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[]);
+void scoreDisplay(uint32_t topScreen[], int score[])
+int joystickDir(int controlside, int upordown);
 
 int main(void) {
 
@@ -13,6 +18,8 @@ int main(void) {
     int controlside = 0;
     int paddlecentre1 = 15;
     int paddlecentre2 = 15;
+    int gameover = 0;
+    int score[] = {0, 0};
 
 
     rcc_periph_clock_enable(RCC_GPIOA);
@@ -47,11 +54,25 @@ int main(void) {
     */
     // add 96 * 32 clock ticks here
     //Make this only run once by placing the rest of the code in a loop that only ends when the game is over
+
+
+    rcc_periph_clock_enable(RCC_ADC12); //Enable clock for ADC registers 1 and 2
+
+    adc_power_off(ADC1);  //Turn off ADC register 1 whist we set it up
+
+    adc_set_clk_prescale(ADC1, ADC_CCR_CKMODE_DIV1);  //Setup a scaling, none is fine for this
+    adc_disable_external_trigger_regular(ADC1);   //We don't need to externally trigger the register...
+    adc_set_right_aligned(ADC1);  //Make sure it is right aligned to get more usable values
+    adc_set_sample_time_on_all_channels(ADC1, ADC_SMPR_SMP_61DOT5CYC);  //Set up sample time
+    adc_set_resolution(ADC1, ADC_CFGR1_RES_12_BIT);  //Get a good resolution
+
+    adc_power_on(ADC1);  //Finished setup, turn on ADC register 1
+
     uint32_t bottomScreen[16];
     uint32_t topScreen[16];
     printScreen(bottomScreen, topScreen);
     
-    while (resethasrun == 0){
+    while (gameover == 0){
         bottomScreen[15] = 4294967295;
         topScreen[0] = 4294967295;
         for (int i=0; i<15; i++){
@@ -59,13 +80,28 @@ int main(void) {
             topScreen[i+1] = 2147483649;
         }
         
-        //Putting the paddlecontroller here will meen it will overwrite the exmpty values, this means that the game will clear old paddlecontroller LEDS
+        //Putting the paddlecontroller here will mean it will overwrite the exmpty values, this means that the game will clear old paddlecontroller LEDS
         paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 1;
         paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 0;
         resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
-        printScreen(bottomScreen, topScreen);
+        if (resethasrun != 0){
+            scoreScreen(bottomScreen, topScreen, resethasrun);
+            score[resethasrun - 1]++;
+        }
+        else{
+            scoreDisplay(topScreen, score);
+            printScreen(bottomScreen, topScreen);
+        }
+        if (score[0] == 5){
+            void gameOver(bottomScreen, topScreen, score);
+            gameover = 1;
+        }
+        else if (score[1] == 5){
+            void gameOver(bottomScreen, topScreen, score);
+            gameover = 1;
+        }
         for (volatile unsigned int tmr=1e6; tmr > 0; tmr--);
     }
     return 0;
@@ -83,7 +119,7 @@ void printScreen(uint32_t bottomScreen[], uint32_t topScreen[]){
 
     for (int i = 0; i<2; i++){
         for (int j = 0; j<16; j++){
-            rowSelector(j);
+            rowSelector((j + 15) % 16); // this was done since the top row would be displyed in the bottom, so I just changed the order of appearance
             //Every time i increments, the row selector must increase by 1
             for (int k = 0; k<3; k++){
                 if (i == 0){
@@ -157,19 +193,28 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
     int incrementAmount = 0;
 
     int paddlecentre = 0;
+    int upordown = 0; // direction 1 is assumed to be up
+  
+    
 
-    if (controlside == 0){
-        goUp = 0; //add input player 1 here
-        goDown = 0; 
-        incrementAmount = 4;
-        paddlecentre = paddlecentre1;
+    goUp = joystickDir(controlside, upordown); 
+    if (goUp == 0){
+        upordown = 1;
+        goDown = joystickDir(controlside, upordown); 
     }
-    else if (controlside == 1){
-        goUp = 1; //add input player 2 here
-        goDown = 1;
-        incrementAmount = 536870912;
-        paddlecentre = paddlecentre2;
+    if (goUp + goDown != 0){
+        if (controlside = 0){
+            incrementAmount = 4;
+            paddlecentre = paddlecentre1;
+        }
+        else {
+            incrementAmount = 536870912;
+            paddlecentre = paddlecentre2;
+        }
     }
+    
+    
+
     
     // control side 0 is left
 
@@ -228,8 +273,11 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     static int balldirection = 0;
     static int ballpositionx = 32768;
 
-    if (ballpositionx == 1 || ballpositionx == 1073741824){
+    if (ballpositionx == 1073741824){
         return resethasrun = 1;
+    }
+    else if (ballpositionx == 1){
+        return resethasrun = 2;
     }
     else{
         return resethasrun = 0;
@@ -275,10 +323,204 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     //add rebound mechanic with paddlecentre 1 and 2
 } 
 
+int joystickDir(int controlside, int upordown){
+    
+    int arrayposition = upordown + 2*controlside; // this assigns values depending on upordown and controlside (from 1 - 4)
+
+    uint8_t channelArray[] = {1, 2, 6, 7};  
+    adc_set_regular_sequence(ADC1, 1, channelArray[arrayposition]); 
+    adc_start_conversion_regular(ADC1); 
+
+    while(!(adc_eoc(ADC1))); // ADC1 is assumed to be the register
+
+    uint32_t value = adc_read_regular(ADC1);
+    if (value < 100){ // this is a random value assumed to be the threshold due to lack of time to test 
+        return 1
+    }
+    else {
+        return 0;
+    }
+
+}
+
+void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
+    
+
+    for (i=0; i<3; i++){
+
+        bottomScreen[15] = 4294967295;
+        topScreen[0] = 4294967295;
+        for (int i=0; i<15; i++){
+            bottomScreen[i] = 2147483649;
+            topScreen[i+1] = 2147483649;
+        } // makes the screen a blank border
+
+        printScreen(bottomScreen, topScreen);
+        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+
+        if (resethasrun == 2){ // displays P1/P2 SCORES respectively
+            topScreen[4] = 2155355905;
+            topScreen[5] = 2156667137;
+            topScreen[6] = 2164277505;
+            topScreen[7] = 2164277505;
+            topScreen[8] = 2164277505;
+            topScreen[9] = 2164269313;
+            topScreen[10] = 2155880193;
+            topScreen[11] = 2151678209;
+            topScreen[12] = 2149581057;
+            topScreen[13] = 2148532481;
+            topScreen[14] = 2148008193;
+            topScreen[15] = 2180776193;
+        }
+        else{
+            topScreen[4] = 2151685889;
+            topScreen[5] = 2153783553;
+            topScreen[6] = 2152743169;
+            topScreen[7] = 2164277505;
+            topScreen[8] = 2151694593;
+            topScreen[9] = 2151686401;
+            topScreen[10] = 2151685889;
+            topScreen[11] = 2151678209;
+            topScreen[12] = 2151678209;
+            topScreen[13] = 2151678209;
+            topScreen[14] = 2151678209;
+            topScreen[15] = 2214068481;
+        }
+
+        bottomScreen[3] = 4224660383;
+        bottomScreen[4] = 2287028289;
+        bottomScreen[5] = 2287028289;
+        bottomScreen[6] = 2287028289;
+        bottomScreen[7] = 4224660383;
+        bottomScreen[8] = 2151893072;
+        bottomScreen[9] = 2152024144;
+        bottomScreen[10] = 2152286288;
+        bottomScreen[11] = 4224791455;
+
+    }
+
+    printScreen(bottomScreen, topScreen);
+    for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+    
+    // this loop prints blank border screen, then P1/P2 SCORES, this gives the effect of flashing 3 times
+}
+
+void scoreDisplay(uint32_t topScreen[], int score[]){
+    switch (score[0])
+    {
+    case 0:
+        topScreen[3] = topScreen[3] + 1792;
+        topScreen[4] = topScreen[4] + 1280;
+        topScreen[5] = topScreen[5] + 1280;
+        topScreen[6] = topScreen[6] + 1280;
+        topScreen[7] = topScreen[7] + 1792;
+
+        break;
+    case 1:
+        topScreen[3] = topScreen[3] + 512;
+        topScreen[4] = topScreen[4] + 768;
+        topScreen[5] = topScreen[5] + 512;
+        topScreen[6] = topScreen[6] + 512;
+        topScreen[7] = topScreen[7] + 1792; 
+
+        break;
+    case 2:
+        topScreen[3] = topScreen[3] + 512;
+        topScreen[4] = topScreen[4] + 1280;
+        topScreen[5] = topScreen[5] + 1024;
+        topScreen[6] = topScreen[6] + 512;
+        topScreen[7] = topScreen[7] + 1792; 
+
+        break;
+    case 3:
+        topScreen[3] = topScreen[3] + 1762;
+        topScreen[4] = topScreen[4] + 1024;
+        topScreen[5] = topScreen[5] + 1762;
+        topScreen[6] = topScreen[6] + 1024;
+        topScreen[7] = topScreen[7] + 1792; 
+
+        break;
+    case 4:
+        topScreen[3] = topScreen[3] + 1280;
+        topScreen[4] = topScreen[4] + 1280;
+        topScreen[5] = topScreen[5] + 1792;
+        topScreen[6] = topScreen[6] + 1024;
+        topScreen[7] = topScreen[7] + 1024; 
+
+        break;
+    }
+    switch (score[1])
+    {
+    case 0:
+        topScreen[3] = topScreen[3] + 14680064;
+        topScreen[4] = topScreen[4] + 10485760;
+        topScreen[5] = topScreen[5] + 10485760;
+        topScreen[6] = topScreen[6] + 10485760;
+        topScreen[7] = topScreen[7] + 14680064; 
+
+        break;
+    case 1:
+        topScreen[3] = topScreen[3] + 4194304;
+        topScreen[4] = topScreen[4] + 6291456;
+        topScreen[5] = topScreen[5] + 4194304;
+        topScreen[6] = topScreen[6] + 4194304;
+        topScreen[7] = topScreen[7] + 14680064; 
+
+        break;
+    case 2:
+        topScreen[3] = topScreen[3] + 4194304;
+        topScreen[4] = topScreen[4] + 10485760;
+        topScreen[5] = topScreen[5] + 8388608;
+        topScreen[6] = topScreen[6] + 4194304;
+        topScreen[7] = topScreen[7] + 14680064; 
+
+        break;
+    case 3:
+        topScreen[3] = topScreen[3] + 14680064;
+        topScreen[4] = topScreen[4] + 8388608;
+        topScreen[5] = topScreen[5] + 14680064;
+        topScreen[6] = topScreen[6] + 8388608;
+        topScreen[7] = topScreen[7] + 14680064; 
+
+        break;
+    case 4:
+        topScreen[3] = topScreen[3] + 10485760;
+        topScreen[4] = topScreen[4] + 10485760;
+        topScreen[5] = topScreen[5] + 14680064;
+        topScreen[6] = topScreen[6] + 8388608;
+        topScreen[7] = topScreen[7] + 8388608; 
+
+        break;
+    
+    
+    }
+    //2^8
+    // 2^21 =
+    
+}
+
+void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[]){
+
+    if (score[0] == 5){
+
+    }
+    else if (score[1] == 5){
+
+    }
+
+}
 
 // VERY IMPORTANT 
 // Missing fearures
-// control inputs for joystick
+// add gameover
+
+
+
+
+
+
+
+
 
 //Evgeny's how to guide to reading heirogyphics
 
