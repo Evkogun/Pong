@@ -8,9 +8,10 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
 int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int resethasrun);
 void rowSelector(int rowSelector);
 void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
-void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[]);
+void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int resethasrun);
 void scoreDisplay(uint32_t topScreen[], int score[])
 int joystickDir(int controlside, int upordown);
+void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
 
 int main(void) {
 
@@ -95,11 +96,11 @@ int main(void) {
             printScreen(bottomScreen, topScreen);
         }
         if (score[0] == 5){
-            void gameOver(bottomScreen, topScreen, score);
+            void gameOver(bottomScreen, topScreen, score, resethasrun);
             gameover = 1;
         }
         else if (score[1] == 5){
-            void gameOver(bottomScreen, topScreen, score);
+            void gameOver(bottomScreen, topScreen, score, resethasrun);
             gameover = 1;
         }
         for (volatile unsigned int tmr=1e6; tmr > 0; tmr--);
@@ -344,7 +345,6 @@ int joystickDir(int controlside, int upordown){
 }
 
 void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
-    
 
     for (i=0; i<3; i++){
 
@@ -358,35 +358,10 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
         printScreen(bottomScreen, topScreen);
         for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
 
-        if (resethasrun == 2){ // displays P1/P2 SCORES respectively
-            topScreen[4] = 2155355905;
-            topScreen[5] = 2156667137;
-            topScreen[6] = 2164277505;
-            topScreen[7] = 2164277505;
-            topScreen[8] = 2164277505;
-            topScreen[9] = 2164269313;
-            topScreen[10] = 2155880193;
-            topScreen[11] = 2151678209;
-            topScreen[12] = 2149581057;
-            topScreen[13] = 2148532481;
-            topScreen[14] = 2148008193;
-            topScreen[15] = 2180776193;
-        }
-        else{
-            topScreen[4] = 2151685889;
-            topScreen[5] = 2153783553;
-            topScreen[6] = 2152743169;
-            topScreen[7] = 2164277505;
-            topScreen[8] = 2151694593;
-            topScreen[9] = 2151686401;
-            topScreen[10] = 2151685889;
-            topScreen[11] = 2151678209;
-            topScreen[12] = 2151678209;
-            topScreen[13] = 2151678209;
-            topScreen[14] = 2151678209;
-            topScreen[15] = 2214068481;
-        }
+        // displays P1/P2 
+        pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
 
+        //dispaly SCORES
         bottomScreen[3] = 4224660383;
         bottomScreen[4] = 2287028289;
         bottomScreen[5] = 2287028289;
@@ -397,10 +372,9 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
         bottomScreen[10] = 2152286288;
         bottomScreen[11] = 4224791455;
 
+        printScreen(bottomScreen, topScreen);
+        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
     }
-
-    printScreen(bottomScreen, topScreen);
-    for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
     
     // this loop prints blank border screen, then P1/P2 SCORES, this gives the effect of flashing 3 times
 }
@@ -499,20 +473,77 @@ void scoreDisplay(uint32_t topScreen[], int score[]){
     
 }
 
-void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[]){
+void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int resethasrun){
 
-    if (score[0] == 5){
+    for (i=0; i<3; i++){
 
+        bottomScreen[15] = 4294967295;
+        topScreen[0] = 4294967295;
+        for (int i=0; i<15; i++){
+            bottomScreen[i] = 2147483649;
+            topScreen[i+1] = 2147483649;
+        } // makes the screen a blank border
+
+        printScreen(bottomScreen, topScreen);
+        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+
+        if (score[0] == 5){
+            resethasrun = 2;
+            pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+        }
+        else if (score[1] == 5){
+            resethasrun = 1;
+            pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+        }
+
+        //dispaly WINS
+        bottomScreen[4] = 2403717393;
+        bottomScreen[5] = 2169278737;
+        bottomScreen[6] = 2169278737;
+        bottomScreen[7] = 2404682401;
+        bottomScreen[8] = 2288290465;
+        bottomScreen[9] = 2288290465;
+        bottomScreen[10] = 2403714113;
+
+
+        printScreen(bottomScreen, topScreen);
+        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
     }
-    else if (score[1] == 5){
+}
 
+void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
+
+    if (resethasrun == 2){
+        topScreen[4] = 2155355905;
+        topScreen[5] = 2156667137;
+        topScreen[6] = 2164277505;
+        topScreen[7] = 2164277505;
+        topScreen[8] = 2164277505;
+        topScreen[9] = 2164269313;
+        topScreen[10] = 2155880193;
+        topScreen[11] = 2151678209;
+        topScreen[12] = 2149581057;
+        topScreen[13] = 2148532481;
+        topScreen[14] = 2148008193;
+        topScreen[15] = 2180776193;
+    }
+    else{
+        topScreen[4] = 2151685889;
+        topScreen[5] = 2153783553;
+        topScreen[6] = 2152743169;
+        topScreen[7] = 2164277505;
+        topScreen[8] = 2151694593;
+        topScreen[9] = 2151686401;
+        topScreen[10] = 2151685889;
+        topScreen[11] = 2151678209;
+        topScreen[12] = 2151678209;
+        topScreen[13] = 2151678209;
+        topScreen[14] = 2151678209;
+        topScreen[15] = 2214068481;
     }
 
 }
 
-// VERY IMPORTANT 
-// Missing fearures
-// add gameover
 
 
 
@@ -520,9 +551,7 @@ void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[]){
 
 
 
-
-
-//Evgeny's how to guide to reading heirogyphics
+//Evgeny's how to guide to reading heirogyphics (outdated)
 
 
 // void printScreen(int bottomScreen[], int topScreen[]){
