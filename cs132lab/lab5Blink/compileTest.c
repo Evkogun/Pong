@@ -66,19 +66,6 @@ int main(void) {
     gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO9);
     gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);  
     gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO10);
-    
-    adc_power_off(ADC1);  //Turn off ADC register 1 whist we set it up
-    adc_set_clk_prescale(ADC1, ADC_CCR_CKMODE_DIV1);  //Setup a scaling, none is fine for this
-    adc_disable_external_trigger_regular(ADC1);   //We don't need to externally trigger the register...
-    adc_set_right_aligned(ADC1);  //Make sure it is right aligned to get more usable values
-    adc_set_sample_time_on_all_channels(ADC1, ADC_SMPR_SMP_61DOT5CYC);  //Set up sample time
-    adc_set_resolution(ADC1, ADC_CFGR1_RES_12_BIT);  //Get a good resolution
-    adc_power_on(ADC1);  //Finished setup, turn on ADC register 1
-
-
-    // add 96 * 32 clock ticks here
-    //Make this only run once by placing the rest of the code in a loop that only ends when the game is over
-
 
     rcc_periph_clock_enable(RCC_ADC12); //Enable clock for ADC registers 1 and 2
 
@@ -95,6 +82,7 @@ int main(void) {
     uint32_t bottomScreen[16];
     uint32_t topScreen[16];
     printScreen(bottomScreen, topScreen);
+    // prints a blank screen at the start
     
     while (gameover == 0){
         bottomScreen[15] = 4294967295;
@@ -103,13 +91,18 @@ int main(void) {
             bottomScreen[i] = 2147483649;
             topScreen[i+1] = 2147483649;
         }
+        // Creates an empty border
+        // this also serves to remove any previous paddles/LED's
+
         
-        //Putting the paddlecontroller here will mean it will overwrite the exmpty values, this means that the game will clear old paddlecontroller LEDS
         paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 1;
         paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 0;
+        //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
+        //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
         resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+        // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
         if (resethasrun != 0){
             scoreScreen(bottomScreen, topScreen, resethasrun);
             score[resethasrun - 1]++;
@@ -126,7 +119,9 @@ int main(void) {
             void gameOver(bottomScreen, topScreen, score, resethasrun);
             gameover = 1;
         }
-        for (volatile unsigned int tmr=1e6; tmr > 0; tmr--);
+        // this is basically just the P? wins screen
+        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+        // refresh rate
     }
     return 0;
 }
