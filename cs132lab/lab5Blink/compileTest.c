@@ -1,3 +1,33 @@
+//Evgeny's how to guide to reading heirogyphics (New)
+
+/*
+
+This programm basically functions by storing each row within 2 different arrays, representing the top and bottom screen, this makes it easier for the code to print these arrays as the bottom array
+has to be printed first, if we used a single array it would hve to print 16-31 then 0-15. Seperating these arrays allows us to alter the top and bottom half seperately which reduces data load
+since a full array would be 32*32 bits
+
+Each space in the array is a row. Originally it was going to be a 32 bit binary number, but I didn't know how to store binary so I stored it as a number, this allows us to add bits onto the data.
+If I wanted to add 0111 to the left of row 3, I would add 14 to the stored value. This does leed into a problem with overflow, if 2 points are added onto each other the point to the left will light
+up, this would take too long to resolve and only occurs when the ball contacts numbers.
+
+Keep in mind with the way the binary converter works, the smallest numbers are printed first, since the LED panel prints right to left this means THE SMALLEST NUMBERS ARE ON THE LEFT
+
+The code functions within a main loop, variables are setup and then a loop is created that runs until the gameover command executes. This loop works by creating a border around the LED panel, then
+using various functions to print different images onto this display, this print process happens at the end of the loops so that the the data is only displayed when all functions have interacted with it
+
+Initially it was thought that if data smaller than 2^31 was inputed, the system would shift everything incorrectly, this I realise later was false, however I have made it so that all of the score/gameover
+screens have a solid border on the very right just in case
+
+That's an overview of how this code functions, I will go into further detail within each function
+
+
+*/
+
+
+
+
+
+
 #include "libopencm3/stm32/rcc.h"   //Needed to enable clocks for particular GPIO ports
 #include "libopencm3/stm32/gpio.h"  //Needed to define things on the GPIO
 #include <stdint.h>
@@ -36,7 +66,7 @@ int main(void) {
     gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO9);
     gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);  
     gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO10);
-    /*
+    
     adc_power_off(ADC1);  //Turn off ADC register 1 whist we set it up
     adc_set_clk_prescale(ADC1, ADC_CCR_CKMODE_DIV1);  //Setup a scaling, none is fine for this
     adc_disable_external_trigger_regular(ADC1);   //We don't need to externally trigger the register...
@@ -45,14 +75,7 @@ int main(void) {
     adc_set_resolution(ADC1, ADC_CFGR1_RES_12_BIT);  //Get a good resolution
     adc_power_on(ADC1);  //Finished setup, turn on ADC register 1
 
-    uint8_t channelArray = {1};  //Define a channel that we want to look at
-    adc_set_regular_sequence(ADC1, 1, channelArray);  //Set up the channel
-    adc_start_conversion_regular(ADC1);  //Start converting the analogue signal
-    
-    while(!(adc_eoc(ADC1)));  //Wait until the register is ready to read data
 
-    uint32_t value = adc_read_regular(ADC1);  //Read the value from the register and channel
-    */
     // add 96 * 32 clock ticks here
     //Make this only run once by placing the rest of the code in a loop that only ends when the game is over
 
@@ -551,43 +574,3 @@ void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
 
 
 
-//Evgeny's how to guide to reading heirogyphics (outdated)
-
-
-// void printScreen(int bottomScreen[], int topScreen[]){
-// This function prints the arrays bottomscreen and topscreen in that order
-// It goes in order or for loops (2 = top/bottom), (16 = 16 rows), (3 = 3 colour options), (32 = 32 bits in an interger)
-
-
-//void rowSelector(int rowSelector) {
-//This is basically a binary counter that selects rows (GPIO 2-5) as outputs
-
-//void paddleController(int bottomScreen[], int topScreen[], int paddlecentre1, int paddlecentre2, int controlside){
-//Bascially takes turns moving both paddles using integer values
-
-//void ball(int balldirection, int ballpositionx, int ballrow, int bottomScreen[], int topScreen[], int paddlecentre1, int paddlecentre2, int resethasrun){
-//spawns the ball, changes it's direction when hitting a wall and paddle, also sends the game-over signal
-
-/*
-    unsigned int32_t bottomScreen[16] = {0};
-    unsigned int32_t topScreen[16] = {0};
-    printScreen(bottomScreen, topScreen);
-    
-    while (resethasrun == 0){
-        bottomScreen[16] = {2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 4294967295};
-        topScreen[16] = {4294967295, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649, 2147483649};
-        
-        //Putting the paddlecontroller here will meen it will overwrite the exmpty values, this means that the game will clear old paddlecontroller LEDS
-        paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-        controlside = 1;
-        paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-        controlside = 0;
-        ball(balldirection, ballpositionx, ballrow, bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
-        printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=1e6; tmr > 0; tmr--);
-    }
-    return 0;
-*/
-
-// The top resets the code every time it's run by printing zeros all over the screen
-// It creates a default value that is basically a square border, it then print player 1s paddle controller then player 2s paddle controller then the ball onto the screen, with a delay so that the movement of the ball/paddle isn't too fast
