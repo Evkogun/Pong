@@ -18,6 +18,8 @@ using various functions to print different images onto this display, this print 
 Initially it was thought that if data smaller than 2^31 was inputed, the system would shift everything incorrectly, this I realise later was false, however I have made it so that all of the score/gameover
 screens have a solid border on the very right just in case
 
+Splitting up the screens may not have been necessary however since it added extra code and complictions with how the ball and paddles interacted when crossing between 2 screens
+
 That's an overview of how this code functions, I will go into further detail within each function
 
 
@@ -153,26 +155,17 @@ void printScreen(uint32_t bottomScreen[], uint32_t topScreen[]){
                     rowDecimal = rowDecimal/2;
                     //since there is a constant border the int values will always be at least 32 binary bits long#
                     if (rowDecimalOverflow == 1){
-                        //Insert set commands here
                         gpio_set(GPIOA, GPIO6);
-                        //printf("1"); temp
-                        
                     }
                     else{
-                        //insert clear command here
                         gpio_clear(GPIOA, GPIO6);
-                        //printf("0"); temp
-                        
                     }
                 }
-                //printf("\n"); temp replacement for row selector
             }
-        
-        
         }
     }
     gpio_set(GPIOA, GPIO8);
-
+    // Latch makes it so changes only show up once all the code has been executed
 }
 
 void rowSelector(int rowSelector) {
@@ -196,12 +189,8 @@ void rowSelector(int rowSelector) {
             }
         }
     }
-    //printf("\n");
+    // this also uses a denary to binary converter to select a row, the binary as with the printscreen takes the form of gpio_set/clear
 }
-
-//If you want to reset it set to clear and clock it a shitton of times 192*32
-
-//When only a single line changes, should I refresh the entire page or just that line
 
 void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside){
     
@@ -215,7 +204,7 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
     int upordown = 0; // direction 1 is assumed to be up
   
     
-
+    
     goUp = joystickDir(controlside, upordown); 
     if (goUp == 0){
         upordown = 1;
@@ -230,19 +219,15 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
             incrementAmount = 536870912;
             paddlecentre = paddlecentre2;
         }
+        // this fetches the location of the paddle
     }
-    
-    
-
-    
-    // control side 0 is left
+    // this checks both joysticks for movement, then decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
 
     if (goUp != 0){
         paddlecentre = paddlecentre - 1;
         if (paddlecentre == 1){
             paddlecentre = 2;
         }
-        //add delay at the end
     }
     else if (goDown != 0){
         paddlecentre = paddlecentre + 1;
@@ -250,6 +235,7 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
             paddlecentre = 62;
         }
     }
+    // this prevents the paddles from passing into the walls and out of the array
 
     int paddleup = paddlecentre - 1;
     int paddledown = paddlecentre + 1;
@@ -276,13 +262,15 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
         bottomScreen[paddlecentre % 15] = bottomScreen[paddlecentre % 15] + incrementAmount;
         bottomScreen[paddledown % 15] = bottomScreen[paddledown % 15] + incrementAmount;
     }
-    
+    // this block of code allows the paddles to exist on the top/bottom screen at the same time
+
     if (controlside == 0){
         paddlecentre1 = paddlecentre;
     }
     else if (controlside == 1){
         paddlecentre2 = paddlecentre;
     }
+    // This allows the paddle location to be stored through multiple iterations of the function
 }
 
 int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int resethasrun){
@@ -301,6 +289,7 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     else{
         return resethasrun = 0;
     }
+    // checks if a point has been scored
 
     if (ballrow == 1 || ballrow == 31){
         balldirection++;
@@ -325,6 +314,7 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     else if (balldirection == 2 || balldirection == 3){
         ballrow++;
     }
+    // makes the bass bounce depending on it's trajectory and the sufrace it's colliding on
 
     int whichsection = 0;
     if (ballrow > 15){
@@ -338,8 +328,7 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     else if (whichsection == 1){
         bottomScreen[ballrow] = bottomScreen[ballrow] + ballpositionx;
     }
-    
-    //add rebound mechanic with paddlecentre 1 and 2
+    // this checks if the ball is crossing into top/bottom screen
 } 
 
 int joystickDir(int controlside, int upordown){
@@ -359,7 +348,6 @@ int joystickDir(int controlside, int upordown){
     else {
         return 0;
     }
-
 }
 
 void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
@@ -371,7 +359,8 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
         for (int i=0; i<15; i++){
             bottomScreen[i] = 2147483649;
             topScreen[i+1] = 2147483649;
-        } // makes the screen a blank border
+        } 
+        // makes the screen a blank border
 
         printScreen(bottomScreen, topScreen);
         for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
@@ -486,9 +475,7 @@ void scoreDisplay(uint32_t topScreen[], int score[]){
     
     
     }
-    //2^8
-    // 2^21 =
-    
+    // displays numbers 0-4 for player 1 and 2
 }
 
 void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int resethasrun){
@@ -500,7 +487,8 @@ void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int re
         for (int i=0; i<15; i++){
             bottomScreen[i] = 2147483649;
             topScreen[i+1] = 2147483649;
-        } // makes the screen a blank border
+        } 
+        // makes the screen a blank border
 
         printScreen(bottomScreen, topScreen);
         for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
@@ -527,6 +515,7 @@ void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int re
         printScreen(bottomScreen, topScreen);
         for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
     }
+    // this also has the effect of flashing P1/P2 WINS
 }
 
 void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
@@ -559,7 +548,7 @@ void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
         topScreen[14] = 2151678209;
         topScreen[15] = 2214068481;
     }
-
+    // Displays P1/P2 wins depending on the input
 }
 
 
