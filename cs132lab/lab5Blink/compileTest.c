@@ -2,7 +2,7 @@
 
 /*
 
-This programm basically functions by storing each row within 2 different arrays, representing the top and bottom screen, this makes it easier for the code to print these arrays as the bottom array
+This programme basically functions by storing each row within 2 different arrays, representing the top and bottom screen, this makes it easier for the code to print these arrays as the bottom array
 has to be printed first, if we used a single array it would hve to print 16-31 then 0-15. Seperating these arrays allows us to alter the top and bottom half seperately which reduces data load
 since a full array would be 32*32 bits
 
