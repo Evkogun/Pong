@@ -46,42 +46,42 @@ int joystickDir(int controlside, int upordown);
 void pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
 
 int main(void) {
+    
+    int resethasrun = 0;
+    int controlside = 0;
+    int paddlecentre1 = 15;
+    int paddlecentre2 = 15;
+    int gameover = 0;
+    int score[] = {0, 0};
+    int ballmove = 0;
+
+
+    rcc_periph_clock_enable(RCC_GPIOA);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO5);            //GPIO Port Name, GPIO Mode, GPIO Push Up Pull Down Mode, GPIO Pin Number
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO5);   //GPIO Port Name, GPIO Pin Driver Type, GPIO Pin Speed, GPIO Pin Number
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO6);    
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO6);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO7);    
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO7);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO8);  
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO9);  
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO9);
+    gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);  
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO10);
+
+    rcc_periph_clock_enable(RCC_ADC12); //Enable clock for ADC registers 1 and 2
+
+    adc_power_off(ADC1);  //Turn off ADC register 1 whist we set it up
+
+    adc_set_clk_prescale(ADC1, ADC_CCR_CKMODE_DIV1);  //Setup a scaling, none is fine for this
+    adc_disable_external_trigger_regular(ADC1);   //We don't need to externally trigger the register...
+    adc_set_right_aligned(ADC1);  //Make sure it is right aligned to get more usable values
+    adc_set_sample_time_on_all_channels(ADC1, ADC_SMPR_SMP_61DOT5CYC);  //Set up sample time
+    adc_set_resolution(ADC1, ADC_CFGR1_RES_12_BIT);  //Get a good resolution
+
+    adc_power_on(ADC1);  //Finished setup, turn on ADC register 1
     while (0 == 0){
-        int resethasrun = 0;
-        int controlside = 0;
-        int paddlecentre1 = 15;
-        int paddlecentre2 = 15;
-        int gameover = 0;
-        int score[] = {0, 0};
-        int ballmove = 0;
-
-
-        rcc_periph_clock_enable(RCC_GPIOA);
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO5);            //GPIO Port Name, GPIO Mode, GPIO Push Up Pull Down Mode, GPIO Pin Number
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO5);   //GPIO Port Name, GPIO Pin Driver Type, GPIO Pin Speed, GPIO Pin Number
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO6);    
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO6);
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO7);    
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO7);
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO8);  
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO8);
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO9);  
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO9);
-        gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO10);  
-        gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_100MHZ, GPIO10);
-
-        rcc_periph_clock_enable(RCC_ADC12); //Enable clock for ADC registers 1 and 2
-
-        adc_power_off(ADC1);  //Turn off ADC register 1 whist we set it up
-
-        adc_set_clk_prescale(ADC1, ADC_CCR_CKMODE_DIV1);  //Setup a scaling, none is fine for this
-        adc_disable_external_trigger_regular(ADC1);   //We don't need to externally trigger the register...
-        adc_set_right_aligned(ADC1);  //Make sure it is right aligned to get more usable values
-        adc_set_sample_time_on_all_channels(ADC1, ADC_SMPR_SMP_61DOT5CYC);  //Set up sample time
-        adc_set_resolution(ADC1, ADC_CFGR1_RES_12_BIT);  //Get a good resolution
-
-        adc_power_on(ADC1);  //Finished setup, turn on ADC register 1
-
         uint32_t bottomScreen[16];
         uint32_t topScreen[16];
         printScreen(bottomScreen, topScreen);
