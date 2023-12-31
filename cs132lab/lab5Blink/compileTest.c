@@ -36,7 +36,7 @@ That's an overview of how this code functions, I will go into further detail wit
 #include "libopencm3/stm32/adc.h" // analogue inputs
 
 void printScreen(uint32_t bottomScreen[], uint32_t topScreen[]);
-void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside);
+int paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside);
 int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int resethasrun);
 void rowSelector(int rowSelector);
 void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
@@ -53,6 +53,7 @@ int main(void) {
     int paddlecentre2 = 15;
     int gameover = 0;
     int score[] = {0, 0};
+    int ballmove = 0;
 
 
     rcc_periph_clock_enable(RCC_GPIOA);
@@ -97,13 +98,19 @@ int main(void) {
         // this also serves to remove any previous paddles/LED's
 
         
-        paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+        ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 1;
-        paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+        ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
         controlside = 0;
         //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
         //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
-        resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+        if (ballmove != 0){
+            resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+        }
+        else {
+            topScreen[15] = topScreen[15] + 32768
+            resethasrun = 0;
+        } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
         // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
         if (resethasrun != 0){
             scoreScreen(bottomScreen, topScreen, resethasrun);
@@ -192,7 +199,7 @@ void rowSelector(int rowSelector) {
     // this also uses a denary to binary converter to select a row, the binary as with the printscreen takes the form of gpio_set/clear
 }
 
-void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside){
+int paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int paddlecentre2, int controlside){
     
     // rows will be numbered 0-31
     // paddle centre should be 2-29
@@ -219,7 +226,11 @@ void paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlec
             incrementAmount = 536870912;
             paddlecentre = paddlecentre2;
         }
+        return 1;
         // this fetches the location of the paddle
+    }
+    else{
+        return 0; // this starts the ballmovement when the paddle is moved
     }
     // this checks both joysticks for movement, then decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
 
