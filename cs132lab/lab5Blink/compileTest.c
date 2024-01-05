@@ -327,18 +327,13 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
         ballrow++;
     }
     // makes the bass bounce depending on it's trajectory and the sufrace it's colliding on
-
-    int whichsection = 0;
-    if (ballrow > 15){
-        whichsection = 1;
-    }
     int ballpositiony = ballrow % 15;
-
-    if (whichsection == 0){
-        topScreen[ballrow] = topScreen[ballrow] + ballpositionx;
-    }
-    else if (whichsection == 1){
+    
+    if (ballrow > 15){
         bottomScreen[ballrow] = bottomScreen[ballrow] + ballpositionx;
+    }
+    else {
+        topScreen[ballrow] = topScreen[ballrow] + ballpositionx;
     }
     // this checks if the ball is crossing into top/bottom screen
 } 
