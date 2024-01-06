@@ -54,6 +54,7 @@ int main(void) {
     int gameover = 0;
     int score[] = {0, 0};
     int ballmove = 0;
+    int recount = 0;
 
 
     rcc_periph_clock_enable(RCC_GPIOA);
@@ -88,49 +89,52 @@ int main(void) {
         // prints a blank screen at the start
         
         while (gameover == 0){
-            bottomScreen[15] = 4294967295;
-            topScreen[0] = 4294967295;
-            for (int i=0; i<15; i++){
-                bottomScreen[i] = 2147483649;
-                topScreen[i+1] = 2147483649;
+            if (recount % 20 == 0){
+                bottomScreen[15] = 4294967295;
+                topScreen[0] = 4294967295;
+                for (int i=0; i<15; i++){
+                    bottomScreen[i] = 2147483649;
+                    topScreen[i+1] = 2147483649;
+                }
+                // Creates an empty border
+                // this also serves to remove any previous paddles/LED's
+        
+                
+                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+                controlside = 1;
+                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+                controlside = 0;
+                //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
+                //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
+                if (ballmove != 0){
+                    resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+                }
+                else {
+                    topScreen[15] = topScreen[15] + 32768
+                    resethasrun = 0;
+                } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
+                // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
+                if (resethasrun != 0){
+                    scoreScreen(bottomScreen, topScreen, resethasrun);
+                    score[resethasrun - 1]++;
+                }
+                else{
+                    scoreDisplay(topScreen, score);
+                }
+                if (score[0] == 5){
+                    void gameOver(bottomScreen, topScreen, score, resethasrun);
+                    gameover = 1;
+                }
+                else if (score[1] == 5){
+                    void gameOver(bottomScreen, topScreen, score, resethasrun);
+                    gameover = 1;
+                }
+                // this is basically just the "PX wins" screen
+                for (volatile unsigned int tmr=4e5; tmr > 0; tmr--);
+                // refresh rate
             }
-            // Creates an empty border
-            // this also serves to remove any previous paddles/LED's
-
-            
-            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-            controlside = 1;
-            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-            controlside = 0;
-            //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
-            //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
-            if (ballmove != 0){
-                resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
-            }
-            else {
-                topScreen[15] = topScreen[15] + 32768
-                resethasrun = 0;
-            } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
-            // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
-            if (resethasrun != 0){
-                scoreScreen(bottomScreen, topScreen, resethasrun);
-                score[resethasrun - 1]++;
-            }
-            else{
-                scoreDisplay(topScreen, score);
-                printScreen(bottomScreen, topScreen);
-            }
-            if (score[0] == 5){
-                void gameOver(bottomScreen, topScreen, score, resethasrun);
-                gameover = 1;
-            }
-            else if (score[1] == 5){
-                void gameOver(bottomScreen, topScreen, score, resethasrun);
-                gameover = 1;
-            }
-            // this is basically just the P? wins screen
-            for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
-            // refresh rate
+            printScreen(bottomScreen, topScreen);
+            recount++;
         }
         return 0;
     }
