@@ -120,6 +120,7 @@ int main(void) {
                 }
                 else{
                     scoreDisplay(topScreen, score);
+                    printScreen(bottomScreen, topScreen);
                 }
                 if (score[0] == 5){
                     void gameOver(bottomScreen, topScreen, score, resethasrun);
@@ -133,7 +134,6 @@ int main(void) {
                 for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
                 // refresh rate
             }
-            printScreen(bottomScreen, topScreen);
             recount++;
         }
         return 0;
