@@ -89,7 +89,7 @@ int main(void) {
         // prints a blank screen at the start
         
         while (gameover == 0){
-            if (recount % 20 == 0){
+            if (recount % 25 == 0){
                 bottomScreen[15] = 4294967295;
                 topScreen[0] = 4294967295;
                 for (int i=0; i<15; i++){
@@ -130,7 +130,7 @@ int main(void) {
                     gameover = 1;
                 }
                 // this is basically just the "PX wins" screen
-                for (volatile unsigned int tmr=4e5; tmr > 0; tmr--);
+                for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
                 // refresh rate
             }
             printScreen(bottomScreen, topScreen);
