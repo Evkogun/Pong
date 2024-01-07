@@ -352,7 +352,7 @@ int joystickDir(int controlside, int upordown){
     while(!(adc_eoc(ADC1))); // ADC1 is assumed to be the register
 
     uint32_t value = adc_read_regular(ADC1);
-    if (value < 100){ // this is a random value assumed to be the threshold due to lack of time to test 
+    if (value > 100){ // this is a random value assumed to be the threshold due to lack of time to test 
         return 1
     }
     else {
