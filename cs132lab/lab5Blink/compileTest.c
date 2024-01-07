@@ -54,6 +54,7 @@ int main(void) {
     int gameover = 0;
     int score[] = {0, 0};
     int ballmove = 0;
+    int recount = 0;
 
 
     rcc_periph_clock_enable(RCC_GPIOA);
@@ -88,49 +89,51 @@ int main(void) {
         // prints a blank screen at the start
         
         while (gameover == 0){
-            bottomScreen[15] = 4294967295;
-            topScreen[0] = 4294967295;
-            for (int i=0; i<15; i++){
-                bottomScreen[i] = 2147483649;
-                topScreen[i+1] = 2147483649;
+            if (recount % 25 == 0){
+                bottomScreen[15] = 4294967295;
+                topScreen[0] = 4294967295;
+                for (int i=0; i<15; i++){
+                    bottomScreen[i] = 2147483649;
+                    topScreen[i+1] = 2147483649;
+                }
+                // Creates an empty border
+                // this also serves to remove any previous paddles/LED's
+        
+                
+                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+                controlside = 1;
+                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+                controlside = 0;
+                //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
+                if (ballmove != 0){
+                    resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+                }
+                else {
+                    topScreen[15] = topScreen[15] + 32768
+                    resethasrun = 0;
+                } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
+                // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
+                if (resethasrun != 0){
+                    scoreScreen(bottomScreen, topScreen, resethasrun);
+                    score[resethasrun - 1]++;
+                }
+                else{
+                    scoreDisplay(topScreen, score);
+                    printScreen(bottomScreen, topScreen);
+                }
+                if (score[0] == 5){
+                    void gameOver(bottomScreen, topScreen, score, resethasrun);
+                    gameover = 1;
+                }
+                else if (score[1] == 5){
+                    void gameOver(bottomScreen, topScreen, score, resethasrun);
+                    gameover = 1;
+                }
+                // this is basically just the "PX wins" screen
+                for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
+                // refresh rate
             }
-            // Creates an empty border
-            // this also serves to remove any previous paddles/LED's
-
-            
-            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-            controlside = 1;
-            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-            controlside = 0;
-            //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
-            //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
-            if (ballmove != 0){
-                resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
-            }
-            else {
-                topScreen[15] = topScreen[15] + 32768
-                resethasrun = 0;
-            } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
-            // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
-            if (resethasrun != 0){
-                scoreScreen(bottomScreen, topScreen, resethasrun);
-                score[resethasrun - 1]++;
-            }
-            else{
-                scoreDisplay(topScreen, score);
-                printScreen(bottomScreen, topScreen);
-            }
-            if (score[0] == 5){
-                void gameOver(bottomScreen, topScreen, score, resethasrun);
-                gameover = 1;
-            }
-            else if (score[1] == 5){
-                void gameOver(bottomScreen, topScreen, score, resethasrun);
-                gameover = 1;
-            }
-            // this is basically just the P? wins screen
-            for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
-            // refresh rate
+            recount++;
         }
         return 0;
     }
@@ -327,18 +330,13 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
         ballrow++;
     }
     // makes the bass bounce depending on it's trajectory and the sufrace it's colliding on
-
-    int whichsection = 0;
-    if (ballrow > 15){
-        whichsection = 1;
-    }
     int ballpositiony = ballrow % 15;
-
-    if (whichsection == 0){
-        topScreen[ballrow] = topScreen[ballrow] + ballpositionx;
-    }
-    else if (whichsection == 1){
+    
+    if (ballrow > 15){
         bottomScreen[ballrow] = bottomScreen[ballrow] + ballpositionx;
+    }
+    else {
+        topScreen[ballrow] = topScreen[ballrow] + ballpositionx;
     }
     // this checks if the ball is crossing into top/bottom screen
 } 
@@ -354,7 +352,7 @@ int joystickDir(int controlside, int upordown){
     while(!(adc_eoc(ADC1))); // ADC1 is assumed to be the register
 
     uint32_t value = adc_read_regular(ADC1);
-    if (value < 100){ // this is a random value assumed to be the threshold due to lack of time to test 
+    if (value > 100){ // this is a random value assumed to be the threshold due to lack of time to test 
         return 1
     }
     else {
@@ -382,9 +380,9 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
 
         //dispaly SCORES
         bottomScreen[3] = 4224660383;
-        bottomScreen[4] = 2287028289;
-        bottomScreen[5] = 2287028289;
-        bottomScreen[6] = 2287028289;
+        bottomScreen[4] = 139544641;
+        bottomScreen[5] = 139544641;
+        bottomScreen[6] = 139544641;
         bottomScreen[7] = 4224660383;
         bottomScreen[8] = 2151893072;
         bottomScreen[9] = 2152024144;
