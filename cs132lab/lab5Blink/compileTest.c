@@ -380,9 +380,9 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
 
         //dispaly SCORES
         bottomScreen[3] = 4224660383;
-        bottomScreen[4] = 2287028289;
-        bottomScreen[5] = 2287028289;
-        bottomScreen[6] = 2287028289;
+        bottomScreen[4] = 139544641;
+        bottomScreen[5] = 139544641;
+        bottomScreen[6] = 139544641;
         bottomScreen[7] = 4224660383;
         bottomScreen[8] = 2151893072;
         bottomScreen[9] = 2152024144;
