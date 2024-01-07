@@ -105,7 +105,6 @@ int main(void) {
                 ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
                 controlside = 0;
                 //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
-                //the ball also moves at the same speed as the refresh rate and the paddles, adding some difficulty
                 if (ballmove != 0){
                     resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
                 }
