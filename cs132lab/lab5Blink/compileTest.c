@@ -87,9 +87,17 @@ int main(void) {
         uint32_t topScreen[16];
         printScreen(bottomScreen, topScreen);
         // prints a blank screen at the start
+        resethasrun = 0;
+        controlside = 0;
+        paddlecentre1 = 15;
+        paddlecentre2 = 15;
+        gameover = 0;
+        score[] = {0, 0};
+        ballmove = 0;
+        recount = 0;
         
         while (gameover == 0){
-            
+            // Keeps the programme running until terminated
             bottomScreen[15] = 4294967295;
             topScreen[0] = 4294967295;
             for (int i=0; i<15; i++){
@@ -97,8 +105,7 @@ int main(void) {
                 topScreen[i+1] = 2147483649;
             }
             // Creates an empty border
-            // this also serves to remove any previous paddles/LED's
-    
+            // This clears the previous data from the array, removing the need for clear function
             
             ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
             controlside = 1;
@@ -111,11 +118,14 @@ int main(void) {
             else {
                 topScreen[15] = topScreen[15] + 32768
                 resethasrun = 0;
-            } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
+            } 
+            // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
             // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
             if (resethasrun != 0){
                 scoreScreen(bottomScreen, topScreen, resethasrun);
                 score[resethasrun - 1]++;
+                paddlecentre1 = 15;
+                paddlecentre2 = 15;
             }
             else{
                 scoreDisplay(topScreen, score);
@@ -134,21 +144,20 @@ int main(void) {
             // refresh rate
             
             recount++;
+            // this adds 1 to the frame counter, when this reaches 25, the ball and paddle will be activated for 1 iteration
         }
         return 0;
     }
 }
 
 void printScreen(uint32_t bottomScreen[], uint32_t topScreen[]){
-
     // This function prints the arrays bottomscreen and topscreen in that order
-    
     // It goes in order or for loops (2 = top/bottom), (16 = 16 rows), (3 = 3 colour options), (32 = 32 bits in an interger)
+    // bottomscreen has to be printed first, since the panel sections act like bit shifters, where the top screen overflows into the bottomscreen when full
     unsigned int rowDecimal = 0;
     int rowDecimalOverflow = 0;
-    //Insert latch flip here
     gpio_clear(GPIOA, GPIO8);
-
+    // Prevents any changes displaying until the latch is set again
     for (int i = 0; i<2; i++){
         for (int j = 0; j<16; j++){
             rowSelector((j + 15) % 16); // this was done since the top row would be displyed in the bottom, so I just changed the order of appearance
@@ -215,49 +224,50 @@ int paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlece
     int upordown = 0; // direction 1 is assumed to be up
   
     
-    if (recount % 25 == 0){
-        goUp = joystickDir(controlside, upordown); 
+    if (recount % 25 == 0){ // this runs the paddle code every 25 frames
+        goUp = joystickDir(controlside, upordown); // this checks weather an input has been made, it is assumed that 2 inputs cannot be sent at once, 
+        // and the input won't change between the 2 times that the joyStickDir function is called
         if (goUp == 0){
             upordown = 1;
             goDown = joystickDir(controlside, upordown); 
         }
         if (goUp + goDown != 0){
-            if (controlside = 0){
-                incrementAmount = 4;
-                paddlecentre = paddlecentre1;
-            }
-            else {
-                incrementAmount = 536870912;
-                paddlecentre = paddlecentre2;
-            }
-            return 1;
-            // this fetches the location of the paddle
+            return 1; // this starts the ballmovement when the paddle is moved
         }
         else{
-            return 0; // this starts the ballmovement when the paddle is moved
+            return 0; 
         }
-        // this checks both joysticks for movement, then decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
+        if (controlside = 0){
+            incrementAmount = 4;
+            paddlecentre = paddlecentre1;
+        }
+        else {
+            incrementAmount = 536870912;
+            paddlecentre = paddlecentre2;
+        }
+        // this decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
 
         if (goUp != 0){
             paddlecentre = paddlecentre - 1;
             if (paddlecentre == 1){
-                paddlecentre = 2;
+                paddlecentre++;
             }
         }
         else if (goDown != 0){
             paddlecentre = paddlecentre + 1;
-            if (paddlecentre == 63){
-                paddlecentre = 62;
+            if (paddlecentre == 31){
+                paddlecentre--;
             }
         }
         // this prevents the paddles from passing into the walls and out of the array
     }
 
-        int paddleup = paddlecentre - 1;
-        int paddledown = paddlecentre + 1;
+    int paddleup = paddlecentre - 1;
+    int paddledown = paddlecentre + 1;
+    // this makes printing the paddles easier
 
-    //middle tiles cause problems, there are only 2 that overlap however, those being 15 and 16
-
+    // middle tiles cause problems, there are only 2 that overlap however, those being 15 and 16, so a special if statement has to be used
+    // the printing section is left out of the recount loop since the paddle has to be printed every frame
     if (paddlecentre == 15){
         topScreen[14] = topScreen[14] + incrementAmount;
         topScreen[15] = topScreen[15] + incrementAmount;
@@ -295,13 +305,19 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     static int ballrow = 15;
     static int balldirection = 0;
     static int ballpositionx = 32768;
+    // sets the initial location of the ball
 
     if (recount % 25 == 0){
         if (ballpositionx == 1073741824){
             return resethasrun = 1;
+            ballrow = 15;
+            ballpositionx = 32768;
         }
         else if (ballpositionx == 1){
             return resethasrun = 2;
+            ballrow = 15;
+            ballpositionx = 32768; // this resets the ball position when a point is scored
+            // the direction isn't changed to add a random element to the initial ball direction
         }
         else{
             return resethasrun = 0;
@@ -312,10 +328,10 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
             balldirection++;
         }
         if ((paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow) && ballpositionx == 4){
-            balldirection = balldirection + 1;
+            balldirection++;
         }
         if ((paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow) && ballpositionx == 536870912){
-            balldirection = balldirection + 1;
+            balldirection++;
         }
         balldirection = balldirection % 4;
     
