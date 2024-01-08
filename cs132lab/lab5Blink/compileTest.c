@@ -89,50 +89,50 @@ int main(void) {
         // prints a blank screen at the start
         
         while (gameover == 0){
-            if (recount % 25 == 0){
-                bottomScreen[15] = 4294967295;
-                topScreen[0] = 4294967295;
-                for (int i=0; i<15; i++){
-                    bottomScreen[i] = 2147483649;
-                    topScreen[i+1] = 2147483649;
-                }
-                // Creates an empty border
-                // this also serves to remove any previous paddles/LED's
-        
-                
-                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-                controlside = 1;
-                ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
-                controlside = 0;
-                //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
-                if (ballmove != 0){
-                    resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
-                }
-                else {
-                    topScreen[15] = topScreen[15] + 32768
-                    resethasrun = 0;
-                } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
-                // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
-                if (resethasrun != 0){
-                    scoreScreen(bottomScreen, topScreen, resethasrun);
-                    score[resethasrun - 1]++;
-                }
-                else{
-                    scoreDisplay(topScreen, score);
-                    printScreen(bottomScreen, topScreen);
-                }
-                if (score[0] == 5){
-                    void gameOver(bottomScreen, topScreen, score, resethasrun);
-                    gameover = 1;
-                }
-                else if (score[1] == 5){
-                    void gameOver(bottomScreen, topScreen, score, resethasrun);
-                    gameover = 1;
-                }
-                // this is basically just the "PX wins" screen
-                for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
-                // refresh rate
+            
+            bottomScreen[15] = 4294967295;
+            topScreen[0] = 4294967295;
+            for (int i=0; i<15; i++){
+                bottomScreen[i] = 2147483649;
+                topScreen[i+1] = 2147483649;
             }
+            // Creates an empty border
+            // this also serves to remove any previous paddles/LED's
+    
+            
+            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+            controlside = 1;
+            ballmove = ballmove + paddleController(bottomScreen, topScreen, paddlecentre1, paddlecentre2, controlside);
+            controlside = 0;
+            //rotates very quickly between the 2 sides, allowing both uses to input values, the delay should be short enough for it to register 
+            if (ballmove != 0){
+                resethasrun = ball(bottomScreen, topScreen, paddlecentre1, paddlecentre2, resethasrun);
+            }
+            else {
+                topScreen[15] = topScreen[15] + 32768
+                resethasrun = 0;
+            } // this checks if the player has inputed anything in the joystick, ballmove will always be above zero once an input has been made so this only runs once
+            // Resethasrun checks if a player has scored, and increments score and displays the scorescreen accordinngly
+            if (resethasrun != 0){
+                scoreScreen(bottomScreen, topScreen, resethasrun);
+                score[resethasrun - 1]++;
+            }
+            else{
+                scoreDisplay(topScreen, score);
+                printScreen(bottomScreen, topScreen);
+            }
+            if (score[0] == 5){
+                void gameOver(bottomScreen, topScreen, score, resethasrun);
+                gameover = 1;
+            }
+            else if (score[1] == 5){
+                void gameOver(bottomScreen, topScreen, score, resethasrun);
+                gameover = 1;
+            }
+            // this is basically just the "PX wins" screen
+            for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
+            // refresh rate
+            
             recount++;
         }
         return 0;
@@ -215,45 +215,46 @@ int paddleController(uint32_t bottomScreen[], uint32_t topScreen[], int paddlece
     int upordown = 0; // direction 1 is assumed to be up
   
     
-    
-    goUp = joystickDir(controlside, upordown); 
-    if (goUp == 0){
-        upordown = 1;
-        goDown = joystickDir(controlside, upordown); 
-    }
-    if (goUp + goDown != 0){
-        if (controlside = 0){
-            incrementAmount = 4;
-            paddlecentre = paddlecentre1;
+    if (recount % 25 == 0){
+        goUp = joystickDir(controlside, upordown); 
+        if (goUp == 0){
+            upordown = 1;
+            goDown = joystickDir(controlside, upordown); 
         }
-        else {
-            incrementAmount = 536870912;
-            paddlecentre = paddlecentre2;
+        if (goUp + goDown != 0){
+            if (controlside = 0){
+                incrementAmount = 4;
+                paddlecentre = paddlecentre1;
+            }
+            else {
+                incrementAmount = 536870912;
+                paddlecentre = paddlecentre2;
+            }
+            return 1;
+            // this fetches the location of the paddle
         }
-        return 1;
-        // this fetches the location of the paddle
-    }
-    else{
-        return 0; // this starts the ballmovement when the paddle is moved
-    }
-    // this checks both joysticks for movement, then decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
+        else{
+            return 0; // this starts the ballmovement when the paddle is moved
+        }
+        // this checks both joysticks for movement, then decides the increment amount, if it's controlside 0, it's 4, corresponding to 001
 
-    if (goUp != 0){
-        paddlecentre = paddlecentre - 1;
-        if (paddlecentre == 1){
-            paddlecentre = 2;
+        if (goUp != 0){
+            paddlecentre = paddlecentre - 1;
+            if (paddlecentre == 1){
+                paddlecentre = 2;
+            }
         }
-    }
-    else if (goDown != 0){
-        paddlecentre = paddlecentre + 1;
-        if (paddlecentre == 63){
-            paddlecentre = 62;
+        else if (goDown != 0){
+            paddlecentre = paddlecentre + 1;
+            if (paddlecentre == 63){
+                paddlecentre = 62;
+            }
         }
+        // this prevents the paddles from passing into the walls and out of the array
     }
-    // this prevents the paddles from passing into the walls and out of the array
 
-    int paddleup = paddlecentre - 1;
-    int paddledown = paddlecentre + 1;
+        int paddleup = paddlecentre - 1;
+        int paddledown = paddlecentre + 1;
 
     //middle tiles cause problems, there are only 2 that overlap however, those being 15 and 16
 
@@ -295,42 +296,44 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
     static int balldirection = 0;
     static int ballpositionx = 32768;
 
-    if (ballpositionx == 1073741824){
-        return resethasrun = 1;
+    if (recount % 25 == 0){
+        if (ballpositionx == 1073741824){
+            return resethasrun = 1;
+        }
+        else if (ballpositionx == 1){
+            return resethasrun = 2;
+        }
+        else{
+            return resethasrun = 0;
+        }
+        // checks if a point has been scored
+    
+        if (ballrow == 1 || ballrow == 31){
+            balldirection++;
+        }
+        if ((paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow) && ballpositionx == 4){
+            balldirection = balldirection + 1;
+        }
+        if ((paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow) && ballpositionx == 536870912){
+            balldirection = balldirection + 1;
+        }
+        balldirection = balldirection % 4;
+    
+        if (balldirection == 0 || balldirection == 3){
+            ballpositionx = ballpositionx / 2;
+        }
+        else if (balldirection == 1 || balldirection == 2){
+            ballpositionx = ballpositionx * 2;
+        }
+        if (balldirection == 0 || balldirection == 1){
+            ballrow--;
+        }
+        else if (balldirection == 2 || balldirection == 3){
+            ballrow++;
+        }
+        // makes the bass bounce depending on it's trajectory and the sufrace it's colliding on
+        int ballpositiony = ballrow % 15;
     }
-    else if (ballpositionx == 1){
-        return resethasrun = 2;
-    }
-    else{
-        return resethasrun = 0;
-    }
-    // checks if a point has been scored
-
-    if (ballrow == 1 || ballrow == 31){
-        balldirection++;
-    }
-    if ((paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow) && ballpositionx == 4){
-        balldirection = balldirection + 1;
-    }
-    if ((paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow) && ballpositionx == 536870912){
-        balldirection = balldirection + 1;
-    }
-    balldirection = balldirection % 4;
-
-    if (balldirection == 0 || balldirection == 3){
-        ballpositionx = ballpositionx / 2;
-    }
-    else if (balldirection == 1 || balldirection == 2){
-        ballpositionx = ballpositionx * 2;
-    }
-    if (balldirection == 0 || balldirection == 1){
-        ballrow--;
-    }
-    else if (balldirection == 2 || balldirection == 3){
-        ballrow++;
-    }
-    // makes the bass bounce depending on it's trajectory and the sufrace it's colliding on
-    int ballpositiony = ballrow % 15;
     
     if (ballrow > 15){
         bottomScreen[ballrow] = bottomScreen[ballrow] + ballpositionx;
