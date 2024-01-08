@@ -316,25 +316,48 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
         else if (ballpositionx == 1){
             return resethasrun = 2;
             ballrow = 15;
-            ballpositionx = 32768; // this resets the ball position when a point is scored
+            ballpositionx = 32768; 
+            // this resets the ball position when a point is scored
             // the direction isn't changed to add a random element to the initial ball direction
         }
         else{
             return resethasrun = 0;
         }
         // checks if a point has been scored
-    
-        if (ballrow == 1 || ballrow == 31){
-            balldirection++;
+        if (ballrow == 1){
+            if (balldirection == 2){
+                balldirection = 1;
+            }
+            else if (balldirection == 3){
+                balldirection = 0
+            }
+        }
+        if (ballrow == 31){
+            if (balldirection == 0){
+                balldirection = 3;
+            }
+            else if (balldirection == 1){
+                balldirection = 2;
+            }
         }
         if ((paddlecentre1 == ballrow || paddlecentre1 + 1 == ballrow || paddlecentre1 - 1 == ballrow) && ballpositionx == 4){
-            balldirection++;
+            if (balldirection == 3){
+                balldirection = 2;
+            }
+            else if (balldirection == 0){
+                balldirection = 1;
+            }
         }
         if ((paddlecentre2 == ballrow || paddlecentre2 + 1 == ballrow || paddlecentre2 - 1 == ballrow) && ballpositionx == 536870912){
-            balldirection++;
+            if (balldirection == 1){
+                balldirection = 0
+            }
+            else if (balldirection == 2){
+                balldirection = 3;
+            }
         }
-        balldirection = balldirection % 4;
-    
+        // this is  brute force method, taking into account every possible bounce trajectory
+        
         if (balldirection == 0 || balldirection == 3){
             ballpositionx = ballpositionx / 2;
         }
@@ -362,7 +385,7 @@ int ball(uint32_t bottomScreen[], uint32_t topScreen[], int paddlecentre1, int p
 
 int joystickDir(int controlside, int upordown){
     
-    int arrayposition = upordown + 2*controlside; // this assigns values depending on upordown and controlside (from 1 - 4)
+    int arrayposition = upordown + 2*controlside; // this assigns unique values depending on upordown and controlside (from 1 - 4)
 
     uint8_t channelArray[] = {1, 2, 6, 7};  
     adc_set_regular_sequence(ADC1, 1, channelArray[arrayposition]); 
@@ -392,7 +415,7 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
         // makes the screen a blank border
 
         printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
 
         // displays P1/P2 
         pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
@@ -409,7 +432,7 @@ void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun)
         bottomScreen[11] = 4224791455;
 
         printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
     }
     
     // this loop prints blank border screen, then P1/P2 SCORES, this gives the effect of flashing 3 times
@@ -520,7 +543,7 @@ void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int re
         // makes the screen a blank border
 
         printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
 
         if (score[0] == 5){
             resethasrun = 2;
@@ -542,7 +565,7 @@ void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int re
 
 
         printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=1e5; tmr > 0; tmr--);
+        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
     }
     // this also has the effect of flashing P1/P2 WINS
 }
