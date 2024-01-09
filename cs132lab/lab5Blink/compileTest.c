@@ -405,34 +405,36 @@ int joystickDir(int controlside, int upordown){
 void scoreScreen(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun){
 
     for (i=0; i<3; i++){
-
-        bottomScreen[15] = 4294967295;
-        topScreen[0] = 4294967295;
-        for (int i=0; i<15; i++){
-            bottomScreen[i] = 2147483649;
-            topScreen[i+1] = 2147483649;
-        } 
-        // makes the screen a blank border
-
-        printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
-
-        // displays P1/P2 
-        pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
-
-        //dispaly SCORES
-        bottomScreen[3] = 4224660383;
-        bottomScreen[4] = 139544641;
-        bottomScreen[5] = 139544641;
-        bottomScreen[6] = 139544641;
-        bottomScreen[7] = 4224660383;
-        bottomScreen[8] = 2151893072;
-        bottomScreen[9] = 2152024144;
-        bottomScreen[10] = 2152286288;
-        bottomScreen[11] = 4224791455;
-
-        printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
+        for (i=0; i<20; i++){
+            bottomScreen[15] = 4294967295;
+            topScreen[0] = 4294967295;
+            for (int i=0; i<15; i++){
+                bottomScreen[i] = 2147483649;
+                topScreen[i+1] = 2147483649;
+            } 
+            // makes the screen a blank border
+            printScreen(bottomScreen, topScreen);
+            for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
+            // this for loop maintains the 50fps, waiting for 5e5 milliseconds (0.5 seconds)
+        }
+        for (i=0; i<20; i++){
+            // displays P1/P2 
+            pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+    
+            //dispaly SCORES
+            bottomScreen[3] = 4224660383;
+            bottomScreen[4] = 139544641;
+            bottomScreen[5] = 139544641;
+            bottomScreen[6] = 139544641;
+            bottomScreen[7] = 4224660383;
+            bottomScreen[8] = 2151893072;
+            bottomScreen[9] = 2152024144;
+            bottomScreen[10] = 2152286288;
+            bottomScreen[11] = 4224791455;
+    
+            printScreen(bottomScreen, topScreen);
+            for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
+            }
     }
     
     // this loop prints blank border screen, then P1/P2 SCORES, this gives the effect of flashing 3 times
@@ -533,39 +535,42 @@ void scoreDisplay(uint32_t topScreen[], int score[]){
 void gameOver(uint32_t bottomScreen[], uint32_t topScreen[], int score[], int resethasrun){
 
     for (i=0; i<3; i++){
-
-        bottomScreen[15] = 4294967295;
-        topScreen[0] = 4294967295;
-        for (int i=0; i<15; i++){
-            bottomScreen[i] = 2147483649;
-            topScreen[i+1] = 2147483649;
-        } 
-        // makes the screen a blank border
-
-        printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
-
-        if (score[0] == 5){
-            resethasrun = 2;
-            pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
-        }
-        else if (score[1] == 5){
-            resethasrun = 1;
-            pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+        for (i=0; i<20; i++){
+            bottomScreen[15] = 4294967295;
+            topScreen[0] = 4294967295;
+            for (int i=0; i<15; i++){
+                bottomScreen[i] = 2147483649;
+                topScreen[i+1] = 2147483649;
+            } 
+            // makes the screen a blank border
+    
+            printScreen(bottomScreen, topScreen);
+            for (volatile unsigned int tmr=2e4; tmr > 0; tmr--); // Maintains the 50fps while flashing
         }
 
-        //dispaly WINS
-        bottomScreen[4] = 2403717393;
-        bottomScreen[5] = 2169278737;
-        bottomScreen[6] = 2169278737;
-        bottomScreen[7] = 2404682401;
-        bottomScreen[8] = 2288290465;
-        bottomScreen[9] = 2288290465;
-        bottomScreen[10] = 2403714113;
-
-
-        printScreen(bottomScreen, topScreen);
-        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--);
+        for (i=0; i<20; i++){
+            if (score[0] == 5){
+                resethasrun = 2;
+                pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+            }
+            else if (score[1] == 5){
+                resethasrun = 1;
+                pDisplay(uint32_t bottomScreen[], uint32_t topScreen[], int resethasrun);
+            }
+    
+            //dispaly WINS
+            bottomScreen[4] = 2403717393;
+            bottomScreen[5] = 2169278737;
+            bottomScreen[6] = 2169278737;
+            bottomScreen[7] = 2404682401;
+            bottomScreen[8] = 2288290465;
+            bottomScreen[9] = 2288290465;
+            bottomScreen[10] = 2403714113;
+    
+    
+            printScreen(bottomScreen, topScreen);
+            for (volatile unsigned int tmr=2e4; tmr > 0; tmr--);
+        }
     }
     // this also has the effect of flashing P1/P2 WINS
 }
