@@ -53,16 +53,13 @@ int main(void) {
 
     setup();
     
-    gpio_clear(GPIOC, GPIO8);
-    clear(GPIO2);
-
-    for (int i=0; i<2; i++){
-        set(GPIO6);
+    gpio_set(GPIOC, GPIO8); // Set the Latch, displaying all memory
+    gpio_set(GPIOC, GPIO2); // Select row 1 (rows start at index 0)
+    gpio_set(GPIOC, GPIO6); // Set the input signal, meaning LEDs will be lit up
+    for (int i=0; i<257; i++){
+        clock(); //Clock the next piece of data
+        for (volatile unsigned int tmr=5e5; tmr > 0; tmr--); //Sleep for 0.5 seconds
     }
-    gpio_set(GPIOC, GPIO8);
-
-    
-    
 }
 
 
