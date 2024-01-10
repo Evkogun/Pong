@@ -2,7 +2,36 @@
 
 /*
 
+\subsection{Displaying LED's}
+The display process functions by clearing the latch, then clocking the bottom, then top array. Each array is clocked row by row, 
+with each integer being clocked 3 times to ensure a white colour. This process functions by converting a (maximum) 10 digit denary 
+number to binary, with clear and set representing 1s and 0s. After all rows have been filled in, the latch is set, displaying the 
+new data. The screen refreshes at a rate of 50hz, with the ball moving twice per second. tmr is not used anywhere else apart from 
+score and game-over screens which print separately, this maintains a consistent frame rate.
 
+\subsection{The Ball}
+The ball will start at the centre of the bottom screen. When the game starts, the ball moves north west. To simplify the code it 
+was decided to only move the ball in diagonals, this also makes score and rebound detection a lot simpler. The ball has a y value 
+that increments by 1, choosing the balls row. and a x increment integer, which doubles/halves when moving left/right, this value 
+is added to the top/bottom screen at the end of the function, and the row is selected at the end also.. The ball flips it's y 
+direction when encountering a wall and flips it's x direction when encountering the paddle. 
+
+\subsection{The Paddles}
+The paddles can only have 2 x values depending on their sides, so an if statment decides which x co-ordinate is used depending on 
+the controlling player, which changes depending on the values called to the function. The paddle centre acts as the control point 
+for the paddles, with the other 2 LED's added after. The paddles function through the rowselector function, however the outer LED's 
+get assigned to different rows if the centrepaddle is on either the bottom of the topScreen or top of the bottomScreen,
+
+\subsection{The Joystick Controls}
+A certain port is selected depending on the controlling player, if this input is higher than the specified amount (an arbitrary 
+value that was decided after the lab), a value is passed into the joystick function to signify the direction inputted into the joystick.
+
+\subsection{Display Functions}
+These functions print a blank screen and certain numbers/words depending on the values passed into them when called. gameOver and 
+scoreScreen are called directly by the main function, while pDisplay is used by both so is stored in a separate method. Due to the 
+score containing 5*5*2 integers, it is also stored in separate function for readability. These work by clearing the Screens, placing 
+a blank border and either assigning entire rows new values for words, or adding values onto the row as with the score counter. These 
+values are then printed, then a blank screen is printed, this is repeated 3 times for a flashing effect.
 
 
 */
