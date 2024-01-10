@@ -2,25 +2,7 @@
 
 /*
 
-This programme basically functions by storing each row within 2 different arrays, representing the top and bottom screen, this makes it easier for the code to print these arrays as the bottom array
-has to be printed first, if we used a single array it would hve to print 16-31 then 0-15. Seperating these arrays allows us to alter the top and bottom half seperately which reduces data load
-since a full array would be 32*32 bits
 
-Each space in the array is a row. Originally it was going to be a 32 bit binary number, but I didn't know how to store binary so I stored it as a number, this allows us to add bits onto the data.
-If I wanted to add 0111 to the left of row 3, I would add 14 to the stored value. This does leed into a problem with overflow, if 2 points are added onto each other the point to the left will light
-up, this would take too long to resolve and only occurs when the ball contacts numbers.
-
-Keep in mind with the way the binary converter works, the smallest numbers are printed first, since the LED panel prints right to left this means THE SMALLEST NUMBERS ARE ON THE LEFT
-
-The code functions within a main loop, variables are setup and then a loop is created that runs until the gameover command executes. This loop works by creating a border around the LED panel, then
-using various functions to print different images onto this display, this print process happens at the end of the loops so that the the data is only displayed when all functions have interacted with it
-
-Initially it was thought that if data smaller than 2^31 was inputed, the system would shift everything incorrectly, this I realise later was false, however I have made it so that all of the score/gameover
-screens have a solid border on the very right just in case
-
-Splitting up the screens may not have been necessary however since it added extra code and complictions with how the ball and paddles interacted when crossing between 2 screens
-
-That's an overview of how this code functions, I will go into further detail within each function
 
 
 */
